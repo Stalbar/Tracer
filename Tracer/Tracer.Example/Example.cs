@@ -1,6 +1,10 @@
 ﻿using Tracer.Core.Interfaces;
 using Tracer.Core.Structs;
 using Tracer.Core;
+using Tracer.Serialization.Abstractions.Classes;
+using System.Reflection;
+using Tracer.Serialization.Abstractions;
+
 namespace Tracer.Example
 {
     public class Foo
@@ -84,6 +88,42 @@ namespace Tracer.Example
             TraceResult traceResult = tracer.GetTraceResult();
             TraceResultsParser parser = new();
             var hierarchy = parser.GetMethodsAndThreadsHierarchy(traceResult);
+            SerializeToJson(hierarchy);
+            SerializeToXml(hierarchy);
+            SerializeToYaml(hierarchy);
+        }
+
+        public static void SerializeToJson(List<ThreadInfo> threads)
+        {
+            Assembly a = Assembly.LoadFrom(@"D:\User Files\C#\SPPLab1\Tracer.Serialization\Tracer.Serialization.Json\bin\Debug\net6.0\Tracer.Serialization.Json.dll");
+            Type type = a.GetType("Tracer.Serialization.Json.JsonTraceResultsSerializer", true);
+            var serializer = (ITraceResultsSerializer)Activator.CreateInstance(type);
+            using (var to = File.Open("result.json", FileMode.Create))
+            {
+                serializer.Serialize(threads, to);
+            }
+        }
+
+        public static void SerializeToXml(List<ThreadInfo> threads)
+        {
+            Assembly a = Assembly.LoadFrom(@"D:\User Files\C#\SPPLab1\Tracer.Serialization\Tracer.Serialization.Xml\bin\Debug\net6.0\Tracer.Serialization.Xml.dll");
+            Type type = a.GetType("Tracer.Serialization.Xml.XmlTraceResultsSerializer", true);
+            var serializer = (ITraceResultsSerializer)Activator.CreateInstance(type);
+            using (var to = File.Open("result.xml", FileMode.Create))
+            {
+                serializer.Serialize(threads, to);
+            }
+        }
+
+        public static void SerializeToYaml(List<ThreadInfo> threads)
+        {
+            Assembly a = Assembly.LoadFrom(@"D:\User Files\C#\SPPLab1\Tracer.Serialization\Tracer.Serializaton.Yaml\bin\Debug\net6.0\Tracer.Serializaton.Yaml.dll");
+            Type type = a.GetType("Tracer.Serializaton.Yaml.YamlTraceResultsSerializer", true);
+            var serializer = (ITraceResultsSerializer)Activator.CreateInstance(type);
+            using (var to = File.Open("result.yaml", FileMode.Create))
+            {
+                serializer.Serialize(threads, to);
+            }
         }
     }
 }
